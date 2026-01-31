@@ -1,62 +1,59 @@
-graph TB
-    subgraph "PRESENTATION LAYER"
-        UI1[Streamlit Web UI<br/>Interactive Dashboard]
-        UI2[CLI Interface<br/>orchestrator.py]
+```mermaid
+graph LR
+    subgraph "INPUT DATA"
+        PY[Python Files<br/>.py, test_*.py]
+        JSON[JSON Files<br/>Test data]
     end
 
-    subgraph "ORCHESTRATION LAYER"
-        ORCH[Pipeline Orchestrator<br/>8-Step Sequential Execution]
+    subgraph "CACHE LAYER"
+        REDIS_HASH[File Hashes<br/>file_hash:path]
+        REDIS_CONV[Conversions<br/>conversion:hash]
     end
 
-    subgraph "PROCESSING LAYER"
-        ANALYZE[1. Analyzer<br/>File Scan & AST]
-        CONVERT[2. Converter<br/>AI + Cache]
-        GENERATE[3. Generator<br/>File Org]
-        PYTEST[4. Python Tests<br/>Validation]
-        GOTEST[5. Go Tests<br/>WSL Exec]
-        COMPARE[6. Comparator<br/>Match Check]
-        DECIDE[7. Decision<br/>Pass/Fail]
-        REPORT[8. Reporter<br/>JSON Report]
+    subgraph "PROCESSING DATA"
+        ANALYSIS[Analysis Results<br/>In-memory dict]
+        CONVERSION[Go Code<br/>In-memory strings]
     end
 
-    subgraph "DATA LAYER"
-        REDIS[(Redis Cache<br/>Conversions)]
-        FS[(File System<br/>modern/ Output)]
-        LOGS[(Logs<br/>Audit Trail)]
+    subgraph "OUTPUT DATA"
+        PY_OUT[python-files/<br/>Staged copies]
+        GO_OUT[go-files/<br/>Generated code]
+        JSON_OUT[json-files/<br/>Test data]
+        REPORT[report.json<br/>Full report]
     end
 
-    subgraph "EXTERNAL SERVICES"
-        GROQ[Groq API<br/>LLM Service]
-        WSL[WSL<br/>Go Runtime]
+    subgraph "LOGS"
+        LOG_FILE[pipeline_module_timestamp.log<br/>Detailed logs]
     end
 
-    UI1 --> ORCH
-    UI2 --> ORCH
+    PY --> ANALYSIS
+    JSON --> ANALYSIS
     
-    ORCH --> ANALYZE
-    ANALYZE --> CONVERT
-    CONVERT --> GENERATE
-    GENERATE --> PYTEST
-    PYTEST --> GOTEST
-    GOTEST --> COMPARE
-    COMPARE --> DECIDE
-    DECIDE --> REPORT
+    ANALYSIS --> REDIS_HASH
+    REDIS_HASH --> REDIS_CONV
+    REDIS_CONV --> CONVERSION
     
-    CONVERT <--> REDIS
-    CONVERT <--> GROQ
-    GENERATE --> FS
-    GOTEST <--> WSL
-    ORCH --> LOGS
-    REPORT --> FS
+    ANALYSIS --> PY_OUT
+    CONVERSION --> GO_OUT
+    JSON --> JSON_OUT
+    
+    CONVERSION --> REPORT
+    ANALYSIS --> REPORT
+    
+    ANALYSIS --> LOG_FILE
+    CONVERSION --> LOG_FILE
 
-    classDef uiLayer fill:#3b82f6,stroke:#1e40af,color:#fff,stroke-width:3px
-    classDef orchLayer fill:#8b5cf6,stroke:#6d28d9,color:#fff,stroke-width:3px
-    classDef processLayer fill:#10b981,stroke:#059669,color:#fff,stroke-width:2px
-    classDef dataLayer fill:#f59e0b,stroke:#d97706,color:#fff,stroke-width:2px
-    classDef externalLayer fill:#ef4444,stroke:#dc2626,color:#fff,stroke-width:2px
+    classDef inputClass fill:#3b82f6,stroke:#1e40af,color:#fff
+    classDef cacheClass fill:#f59e0b,stroke:#d97706,color:#fff
+    classDef processClass fill:#8b5cf6,stroke:#6d28d9,color:#fff
+    classDef outputClass fill:#10b981,stroke:#059669,color:#fff
+    classDef logClass fill:#6b7280,stroke:#4b5563,color:#fff
 
-    class UI1,UI2 uiLayer
-    class ORCH orchLayer
-    class ANALYZE,CONVERT,GENERATE,PYTEST,GOTEST,COMPARE,DECIDE,REPORT processLayer
-    class REDIS,FS,LOGS dataLayer
-    class GROQ,WSL externalLayer
+    class PY,JSON inputClass
+    class REDIS_HASH,REDIS_CONV cacheClass
+    class PY,JSON inputClass
+    class REDIS_HASH,REDIS_CONV cacheClass
+    class ANALYSIS,CONVERSION processClass
+    class PY_OUT,GO_OUT,JSON_OUT,REPORT outputClass
+    class LOG_FILE logClass
+```
